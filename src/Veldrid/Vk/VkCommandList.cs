@@ -760,9 +760,7 @@ namespace Veldrid.Vk
             VkMemoryBarrier barrier;
             barrier.sType = VkStructureType.MemoryBarrier;
             barrier.srcAccessMask = VkAccessFlags.TransferWrite;
-            barrier.dstAccessMask = needToProtectUniform
-                ? VkAccessFlags.VertexAttributeRead | VkAccessFlags.UniformRead
-                : VkAccessFlags.VertexAttributeRead;
+            barrier.dstAccessMask = needToProtectUniform ? VkAccessFlags.UniformRead : VkAccessFlags.VertexAttributeRead;
             barrier.pNext = null;
             vkCmdPipelineBarrier(
                 _cb,
