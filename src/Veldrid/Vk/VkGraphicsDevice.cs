@@ -659,11 +659,6 @@ namespace Veldrid.Vk
 
             string fullMessage = $"[{debugReportFlags}] ({objectType}) {message}";
 
-            if (debugReportFlags == VkDebugReportFlagsEXT.ErrorEXT)
-            {
-                throw new VeldridException("A Vulkan validation error was encountered: " + fullMessage);
-            }
-
             Console.WriteLine(fullMessage);
             return 0;
         }
