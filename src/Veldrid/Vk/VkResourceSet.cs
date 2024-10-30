@@ -60,7 +60,7 @@ namespace Veldrid.Vk
                     VkBuffer rangedVkBuffer = Util.AssertSubtype<DeviceBuffer, VkBuffer>(range.Buffer);
                     bufferInfos[i].buffer = rangedVkBuffer.DeviceBuffer;
                     bufferInfos[i].offset = range.Offset;
-                    bufferInfos[i].range = range.SizeInBytes;
+                    bufferInfos[i].range = type == VkDescriptorType.UniformBufferDynamic ? rangedVkBuffer.StructureByteStride : range.SizeInBytes;
                     descriptorWrites[i].pBufferInfo = &bufferInfos[i];
                     _refCounts.Add(rangedVkBuffer.RefCount);
                 }

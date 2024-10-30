@@ -328,9 +328,10 @@ namespace Veldrid
                         $"Read-Only Structured Buffer objects cannot specify {nameof(BufferUsage)}.{nameof(BufferUsage.VertexBuffer)}, {nameof(BufferUsage)}.{nameof(BufferUsage.IndexBuffer)}, or {nameof(BufferUsage)}.{nameof(BufferUsage.IndirectBuffer)}.");
                 }
             }
-            else if (description.StructureByteStride != 0)
+            else if (description.StructureByteStride != 0 &&
+                     !((usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer && (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic))
             {
-                throw new VeldridException("Non-structured Buffers must have a StructureByteStride of zero.");
+                throw new VeldridException("Non-structured and non-dynamic Buffers must have a StructureByteStride of zero.");
             }
             if ((usage & BufferUsage.Staging) != 0 && usage != BufferUsage.Staging)
             {

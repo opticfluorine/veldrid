@@ -18,6 +18,8 @@ namespace Veldrid
         public BufferUsage Usage;
         /// <summary>
         /// For structured buffers, this value indicates the size in bytes of a single structure element, and must be non-zero.
+        /// For dynamic uniform buffers using the Vulkan backend, this value must be set in the same way as for structured
+        /// buffers; for dynamic uniform buffers with other backends, this value is ignored.
         /// For all other buffer types, this value must be zero.
         /// </summary>
         public uint StructureByteStride;

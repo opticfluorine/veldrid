@@ -81,7 +81,7 @@ namespace Veldrid.Vk
 
         protected override DeviceBuffer CreateBufferCore(ref BufferDescription description)
         {
-            return new VkBuffer(_gd, description.SizeInBytes, description.Usage);
+            return new VkBuffer(_gd, description.SizeInBytes, description.Usage, description.StructureByteStride);
         }
 
         public override Fence CreateFence(bool signaled)
