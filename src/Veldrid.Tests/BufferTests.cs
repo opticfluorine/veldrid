@@ -14,7 +14,7 @@ namespace Veldrid.Tests
             uint expectedSize = 64;
             BufferUsage expectedUsage = BufferUsage.Dynamic | BufferUsage.UniformBuffer;
 
-            DeviceBuffer buffer = RF.CreateBuffer(new BufferDescription(expectedSize, expectedUsage));
+            DeviceBuffer buffer = RF.CreateBuffer(new BufferDescription(expectedSize, expectedUsage, expectedSize));
 
             Assert.Equal(expectedUsage, buffer.Usage);
             Assert.Equal(expectedSize, buffer.SizeInBytes);
@@ -248,7 +248,7 @@ namespace Veldrid.Tests
         public void Update_Dynamic_NonZeroOffset()
         {
             DeviceBuffer dynamic = RF.CreateBuffer(
-                new BufferDescription(1024, BufferUsage.Dynamic | BufferUsage.UniformBuffer));
+                new BufferDescription(1024, BufferUsage.Dynamic | BufferUsage.UniformBuffer, 1024));
 
             byte[] initialData = Enumerable.Range(0, 1024).Select(i => (byte)i).ToArray();
             GD.UpdateBuffer(dynamic, 0, initialData);
@@ -286,7 +286,7 @@ namespace Veldrid.Tests
         public void Dynamic_MapRead_Fails()
         {
             DeviceBuffer dynamic = RF.CreateBuffer(
-                new BufferDescription(1024, BufferUsage.Dynamic | BufferUsage.UniformBuffer));
+                new BufferDescription(1024, BufferUsage.Dynamic | BufferUsage.UniformBuffer, 1024));
             Assert.Throws<VeldridException>(() => GD.Map(dynamic, MapMode.Read));
             Assert.Throws<VeldridException>(() => GD.Map(dynamic, MapMode.ReadWrite));
         }
@@ -395,7 +395,11 @@ namespace Veldrid.Tests
         [InlineData(BufferUsage.Staging)]
         public void UpdateUniform_Offset_GraphicsDevice(BufferUsage usage)
         {
-            DeviceBuffer buffer = CreateBuffer(128, usage);
+            uint stride = (usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer &&
+                          (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic
+                ? 128
+                : 0U;
+            DeviceBuffer buffer = CreateBuffer(128, usage, stride);
             Matrix4x4 mat1 = new Matrix4x4(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
             GD.UpdateBuffer(buffer, 0, ref mat1);
             Matrix4x4 mat2 = new Matrix4x4(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2);
@@ -414,7 +418,11 @@ namespace Veldrid.Tests
         [InlineData(BufferUsage.Staging)]
         public void UpdateUniform_Offset_CommandList(BufferUsage usage)
         {
-            DeviceBuffer buffer = CreateBuffer(128, usage);
+            uint stride = (usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer &&
+                          (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic
+                ? 128
+                : 0U;
+            DeviceBuffer buffer = CreateBuffer(128, usage, stride);
             CommandList cl = RF.CreateCommandList();
             cl.Begin();
             Matrix4x4 mat1 = new Matrix4x4(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
@@ -457,7 +465,9 @@ namespace Veldrid.Tests
             }
 
             BufferDescription description = new BufferDescription(64, usage);
-            if ((usage & BufferUsage.StructuredBufferReadOnly) != 0 || (usage & BufferUsage.StructuredBufferReadWrite) != 0)
+            if ((usage & BufferUsage.StructuredBufferReadOnly) != 0 || (usage & BufferUsage.StructuredBufferReadWrite) != 0
+                || ((usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer
+                    && (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic))
             {
                 description.StructureByteStride = 16;
             }
@@ -481,8 +491,12 @@ namespace Veldrid.Tests
         [InlineData(BufferUsage.Staging)]
         public unsafe void CopyBuffer_ZeroSize(BufferUsage usage)
         {
-            DeviceBuffer src = CreateBuffer(1024, usage);
-            DeviceBuffer dst = CreateBuffer(1024, usage);
+            uint stride = (usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer
+                          && (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic
+                ? 1024
+                : 0U;
+            DeviceBuffer src = CreateBuffer(1024, usage, stride);
+            DeviceBuffer dst = CreateBuffer(1024, usage, stride);
 
             byte[] initialDataSrc = Enumerable.Range(0, 1024).Select(i => (byte)i).ToArray();
             byte[] initialDataDst = Enumerable.Range(0, 1024).Select(i => (byte)(i * 2)).ToArray();
@@ -523,7 +537,11 @@ namespace Veldrid.Tests
         [InlineData(BufferUsage.Staging, true)]
         public unsafe void UpdateBuffer_ZeroSize(BufferUsage usage, bool useCommandListUpdate)
         {
-            DeviceBuffer buffer = CreateBuffer(1024, usage);
+            uint stride = (usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer &&
+                          (usage & BufferUsage.Dynamic) == BufferUsage.Dynamic
+                ? 1024
+                : 0U;
+            DeviceBuffer buffer = CreateBuffer(1024, usage, stride);
 
             byte[] initialData = Enumerable.Range(0, 1024).Select(i => (byte)i).ToArray();
             byte[] otherData = Enumerable.Range(0, 1024).Select(i => (byte)(i + 10)).ToArray();
@@ -559,9 +577,9 @@ namespace Veldrid.Tests
             GD.Unmap(readback);
         }
 
-        private DeviceBuffer CreateBuffer(uint size, BufferUsage usage)
+        private DeviceBuffer CreateBuffer(uint size, BufferUsage usage, uint stride = 0)
         {
-            return RF.CreateBuffer(new BufferDescription(size, usage));
+            return RF.CreateBuffer(new BufferDescription(size, usage, stride));
         }
     }
 

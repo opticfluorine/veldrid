@@ -18,17 +18,19 @@ namespace Veldrid.Vk
 
         public override uint SizeInBytes { get; }
         public override BufferUsage Usage { get; }
+        public uint StructureByteStride { get; }
 
         public Vulkan.VkBuffer DeviceBuffer => _deviceBuffer;
         public VkMemoryBlock Memory => _memory;
 
         public VkMemoryRequirements BufferMemoryRequirements => _bufferMemoryRequirements;
 
-        public VkBuffer(VkGraphicsDevice gd, uint sizeInBytes, BufferUsage usage, string callerMember = null)
+        public VkBuffer(VkGraphicsDevice gd, uint sizeInBytes, BufferUsage usage, uint structureByteStride, string callerMember = null)
         {
             _gd = gd;
             SizeInBytes = sizeInBytes;
             Usage = usage;
+            StructureByteStride = structureByteStride;
 
             VkBufferUsageFlags vkUsage = VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst;
             if ((usage & BufferUsage.VertexBuffer) == BufferUsage.VertexBuffer)
@@ -42,6 +44,10 @@ namespace Veldrid.Vk
             if ((usage & BufferUsage.UniformBuffer) == BufferUsage.UniformBuffer)
             {
                 vkUsage |= VkBufferUsageFlags.UniformBuffer;
+                if ((usage & BufferUsage.Dynamic) == BufferUsage.Dynamic && structureByteStride == 0)
+                {
+                    throw new VeldridException("Vulkan dynamic uniform buffers must have non-zero byte stride.");
+                }
             }
             if ((usage & BufferUsage.StructuredBufferReadWrite) == BufferUsage.StructuredBufferReadWrite
                 || (usage & BufferUsage.StructuredBufferReadOnly) == BufferUsage.StructuredBufferReadOnly)
