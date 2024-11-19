@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>opticfluorine.Veldrid</AssemblyName>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>$(BinDir)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn Condition="'$(Configuration)' == 'Debug'">1591</NoWarn>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="NativeLibraryLoader" Version="$(NativeLibraryLoaderVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
     <PackageReference Include="Vk" Version="1.0.25" Condition="'$(ExcludeVulkan)' != 'true'" />
 
